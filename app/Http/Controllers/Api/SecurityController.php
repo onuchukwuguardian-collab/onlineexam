@@ -38,52 +38,55 @@ class SecurityController extends Controller
                 $request->exam_session_id
             );
 
-            $shouldBan = false;
+            $isBanned = false;
             $banDetails = null;
+            $violationCount = 0;
 
-            // For tab switching - IMMEDIATE BAN (1-strike policy)
+            // Implement 3-strike policy for tab switching
             if ($request->violation_type === ExamBan::VIOLATION_TAB_SWITCH) {
-                $shouldBan = true;
 
-                // Get all tab switch violations for this user and subject
                 $violations = ExamSecurityViolation::where('user_id', $request->user_id)
                     ->where('subject_id', $request->subject_id)
                     ->where('violation_type', ExamBan::VIOLATION_TAB_SWITCH)
                     ->orderBy('occurred_at', 'desc')
                     ->get();
                 
-                // Use update-or-create logic to handle bans
-                // Find *any* existing ban, active or not.
-                $ban = ExamBan::where('user_id', $request->user_id)
-                              ->where('subject_id', $request->subject_id)
-                              ->first();
+                $violationCount = $violations->count();
+                $banThreshold = 3;
 
-                if ($ban) {
-                    // If a ban record exists, reactivate it and add new violation details
-                    if (!$ban->is_active) {
-                        $banDetails = $ban->reactivateAndRecordViolation(
+                if ($violationCount >= $banThreshold) {
+                    $isBanned = true;
+
+                    // Use update-or-create logic to handle bans
+                    $ban = ExamBan::where('user_id', $request->user_id)
+                                  ->where('subject_id', $request->subject_id)
+                                  ->first();
+
+                    if ($ban) {
+                        if (!$ban->is_active) {
+                            $banDetails = $ban->reactivateAndRecordViolation(
+                                ExamBan::VIOLATION_TAB_SWITCH,
+                                $violations
+                            );
+                        } else {
+                            $banDetails = $ban;
+                        }
+                    } else {
+                        $banDetails = ExamBan::createSubjectBan(
+                            $request->user_id,
+                            $request->subject_id,
                             ExamBan::VIOLATION_TAB_SWITCH,
                             $violations
                         );
-                    } else {
-                        // If already actively banned, just return the details
-                        $banDetails = $ban;
                     }
-                } else {
-                    // If no ban record exists, create a new one
-                    $banDetails = ExamBan::createSubjectBan(
-                        $request->user_id,
-                        $request->subject_id,
-                        ExamBan::VIOLATION_TAB_SWITCH,
-                        $violations
-                    );
                 }
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Security violation recorded.',
-                'banned' => $shouldBan,
+                'banned' => $isBanned,
+                'violation_count' => $violationCount,
                 'ban_details' => $banDetails
             ]);
 
