@@ -271,7 +271,12 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="banned-tab" data-toggle="tab" href="#banned" role="tab" aria-controls="banned" aria-selected="false">
-                        <i class="fas fa-ban mr-2"></i>Banned Students
+                        <i class="fas fa-ban mr-2"></i>Active Bans
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="all-bans-tab" data-toggle="tab" href="#all-bans" role="tab" aria-controls="all-bans" aria-selected="false">
+                        <i class="fas fa-history mr-2"></i>Ban History
                     </a>
                 </li>
                 <li class="nav-item">
@@ -468,7 +473,87 @@
                         <div class="text-muted small">
                             Showing {{ $bannedStudents->firstItem() }} to {{ $bannedStudents->lastItem() }} of {{ $bannedStudents->total() }} banned students
                         </div>
-                        {{ $bannedStudents->links() }}
+                        {{ $bannedStudents->appends(['all_bans' => $allBans->currentPage()])->links() }}
+                    </div>
+                    @endif
+                </div>
+
+                <!-- All Bans History Tab -->
+                <div class="tab-pane fade" id="all-bans" role="tabpanel" aria-labelledby="all-bans-tab">
+                    <div class="table-responsive">
+                        <table id="allBansTable" class="table table-striped table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Subject</th>
+                                    <th>Banned Date</th>
+                                    <th>Status</th>
+                                    <th>Reason</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($allBans as $ban)
+                                <tr>
+                                    <td>
+                                        <div class="small">
+                                            <div class="font-weight-medium">{{ $ban->user->name ?? 'Unknown' }}</div>
+                                            <div class="text-muted">{{ $ban->user->email ?? 'N/A' }}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ $ban->subject->name ?? 'Unknown' }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="small">
+                                            <div class="font-weight-medium">{{ $ban->banned_at->format('M d, Y') }}</div>
+                                            <div class="text-muted">{{ $ban->banned_at->format('H:i:s') }}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($ban->is_active)
+                                            <span class="badge badge-danger">Active</span>
+                                        @else
+                                            <span class="badge badge-secondary">Inactive</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="text-muted small" style="max-width: 200px;" title="{{ $ban->ban_reason }}">
+                                            {{ Str::limit($ban->ban_reason, 50) }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($ban->is_active)
+                                            <button class="btn btn-sm btn-success unban-btn"
+                                                    data-ban-id="{{ $ban->id }}"
+                                                    data-student-name="{{ $ban->user->name }}"
+                                                    data-subject-name="{{ $ban->subject->name }}"
+                                                    title="Unban Student">
+                                                <i class="fas fa-undo mr-1"></i> Unban
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="fas fa-history fa-3x mb-3 text-muted"></i>
+                                            <h5 class="font-weight-medium">No ban history found</h5>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if($allBans->hasPages())
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted small">
+                            Showing {{ $allBans->firstItem() }} to {{ $allBans->lastItem() }} of {{ $allBans->total() }} total bans
+                        </div>
+                        {{ $allBans->appends(['active_bans' => $bannedStudents->currentPage()])->links() }}
                     </div>
                     @endif
                 </div>
