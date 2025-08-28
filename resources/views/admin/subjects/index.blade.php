@@ -60,9 +60,9 @@
                             <td>{{ $subject->classModel->name ?? 'N/A' }}</td>
                             <td>{{ $subject->exam_duration_minutes }}</td>
                             <td>
-                                <a href="{{ route('admin.questions.index', $subject->id) }}" class="btn btn-info btn-sm" title="Manage Questions">
+                                <a href="{{ route('admin.questions.index', $subject->id) }}" class="btn btn-info btn-sm @if($subject->questions_count == 0) btn-warning @endif" title="Manage Questions">
                                     <i class="fas fa-list-ol"></i>
-                                    <span>{{ $subject->questions->count() }} Questions</span>
+                                    <span>{{ $subject->questions_count }} Questions</span>
                                 </a>
                             </td>
                             <td>
