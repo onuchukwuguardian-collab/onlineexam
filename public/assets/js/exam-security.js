@@ -8,7 +8,7 @@
  * - Reactivation request system for banned users
  * 
  * SECURITY POLICY:
- * - Tab switching: IMMEDIATE BAN (1-strike policy)
+ * - Tab switching: 3-STRIKE POLICY (Ban on 3rd violation)
  * - Right-click: BLOCK BUT NO BAN (prevention only)
  * - Clipboard operations: BLOCK BUT NO BAN (prevention only)
  */
@@ -17,7 +17,7 @@ class ExamSecuritySystem {
     constructor() {
         // Configuration
         this.config = {
-            tabSwitchImmediate: true,      // Ban immediately on first tab switch
+            banThreshold: 3,               // Ban on the 3rd tab switch violation
             trackRightClick: false,        // Don't track right-click as violation
             preventRightClick: true,       // Still prevent right-click functionality
             preventCopyPaste: true,        // Prevent copy/paste operations
@@ -117,15 +117,10 @@ class ExamSecuritySystem {
     handleTabSwitchViolation() {
         if (this.state.banned) return; // Already banned
 
-        console.warn('SECURITY VIOLATION: Tab switching detected');
+        console.warn('SECURITY VIOLATION: Tab switching detected. Reporting to server...');
 
-        // Report violation to server
-        this.reportViolation('tab_switch', 'Student switched tabs or opened new browser window during exam.');
-
-        // Immediate ban for tab switching (if enabled)
-        if (this.config.tabSwitchImmediate) {
-            this.showTabSwitchWarning();
-        }
+        // Report violation to server. The server will decide the consequence.
+        this.reportViolation('tab_switch', 'Student switched tabs or opened a new browser window during the exam.');
     }
 
     /**
@@ -239,7 +234,10 @@ class ExamSecuritySystem {
             if (data.banned) {
                 this.state.banned = true;
                 this.state.banDetails = data.ban_details;
-                this.handleBan();
+                this.showBanWarning(); // Final ban warning
+            } else if (data.violation_count > 0) {
+                // Show a strike warning if not banned yet
+                this.showStrikeWarning(data.violation_count);
             }
         })
         .catch(error => {
@@ -261,7 +259,7 @@ class ExamSecuritySystem {
             if (data.banned) {
                 this.state.banned = true;
                 this.state.banDetails = data.ban_details;
-                this.handleBan();
+                this.showBanWarning();
             }
         })
         .catch(error => {
@@ -270,44 +268,40 @@ class ExamSecuritySystem {
     }
 
     /**
-     * Handle user ban - Show warning and reactivation option
+     * Show a non-banning strike warning for violations 1 and 2.
+     * @param {number} count - The current violation count.
      */
-    handleBan() {
-        // Create and show ban modal
-        this.showBanWarning();
-    }
+    showStrikeWarning(count) {
+        // Ensure no other modals are open
+        const existingModal = document.querySelector('.security-violation-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
 
-    /**
-     * Show tab switch warning
-     */
-    showTabSwitchWarning() {
         const warningElement = document.createElement('div');
         warningElement.className = 'security-violation-modal';
         warningElement.innerHTML = `
             <div class="security-violation-content">
-                <div class="violation-icon">
+                <div class="violation-icon" style="color: #ffc107;">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="violation-message">
-                    <h2>Security Violation Detected</h2>
-                    <p class="violation-description">You have switched browser tabs or opened a new window during the exam.</p>
-                    <p class="violation-penalty">This is a security violation and will result in an immediate ban.</p>
+                    <h2>Security Warning (Strike ${count}/${this.config.banThreshold})</h2>
+                    <p class="violation-description">Leaving the exam page is a violation of the rules.</p>
+                    <p class="violation-penalty">
+                        If you reach ${this.config.banThreshold} violations, your exam access will be suspended.
+                    </p>
                 </div>
                 <div class="violation-actions">
-                    <button class="btn btn-danger" id="acknowledgeBanBtn">I Understand</button>
+                    <button class="btn btn-warning" id="acknowledgeWarningBtn">I Understand, Return to Exam</button>
                 </div>
             </div>
         `;
 
         document.body.appendChild(warningElement);
 
-        // Add event listener to acknowledge button
-        document.getElementById('acknowledgeBanBtn').addEventListener('click', () => {
+        document.getElementById('acknowledgeWarningBtn').addEventListener('click', () => {
             warningElement.remove();
-            // Try to get subject_id from current exam page
-            const subjectId = this.state.subjectId || new URLSearchParams(window.location.search).get('subject_id') || '';
-            const redirectUrl = subjectId ? `/security/violation-detected?subject_id=${subjectId}` : '/security/violation-detected';
-            window.location.href = redirectUrl;
         });
     }
 
