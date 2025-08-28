@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Timer & Navigation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            padding: 10px;
+            background: #e7f3ff;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .timer.warning { color: #fd7e14; background: #fff3cd; }
+        .timer.critical { color: #dc3545; background: #f8d7da; }
+        
+        .nav-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .nav-btn:hover { background: #0056b3; }
+        .nav-btn:disabled { background: #6c757d; cursor: not-allowed; }
+        
+        .question-numbers {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 5px;
+            margin: 20px 0;
+        }
+        
+        .question-num-btn {
+            width: 35px;
+            height: 35px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .question-num-btn:hover { border-color: #007bff; }
+        .question-num-btn.current { background: #007bff; color: white; }
+        .question-num-btn.answered { background: #28a745; color: white; }
+        
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Exam Timer & Navigation Test</h1>
+    
+    <div class="test-container">
+        <h2>Timer Test</h2>
+        <div class="timer" id="timer">05:00</div>
+        
+        <button class="nav-btn" onclick="startTimer(10)">Start 10s Timer</button>
+        <button class="nav-btn" onclick="startTimer(5)">Start 5s Timer</button>
+        <button class="nav-btn" onclick="resetTimer()">Reset Timer</button>
+        
+        <div>
+            <strong>Status:</strong> <span id="timer-status">Ready</span>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Navigation Test</h2>
+        <p><strong>Current Question:</strong> <span id="current-question">1</span> of 5</p>
+        
+        <button class="nav-btn" id="prevBtn" onclick="previousQuestion()">← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="nextQuestion()">Next →</button>
+        
+        <div class="question-numbers">
+            <button class="question-num-btn current" onclick="goToQuestion(0)">1</button>
+            <button class="question-num-btn" onclick="goToQuestion(1)">2</button>
+            <button class="question-num-btn" onclick="goToQuestion(2)">3</button>
+            <button class="question-num-btn" onclick="goToQuestion(3)">4</button>
+            <button class="question-num-btn" onclick="goToQuestion(4)">5</button>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test Log</h2>
+        <div class="log" id="log">
+            <div class="info">[Ready] Test page loaded successfully</div>
+        </div>
+    </div>
+
+    <script>
+        // Timer variables
+        let timeRemaining = 0;
+        let timerInterval = null;
+        
+        // Navigation variables
+        const totalQuestions = 5;
+        let currentQuestion = 0;
+        let answeredQuestions = [false, false, false, false, false];
+        
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.innerHTML += `<div class="${type}">[${time}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        // TIMER FUNCTIONS
+        function startTimer(seconds) {
+            resetTimer();
+            timeRemaining = seconds;
+            
+            log(`🚀 Starting timer with ${seconds} seconds`, 'success');
+            document.getElementById('timer-status').textContent = `Running (${seconds}s)`;
+            
+            // Verify timeRemaining is valid
+            if (isNaN(timeRemaining) || timeRemaining <= 0) {
+                log('❌ Invalid timeRemaining value: ' + timeRemaining, 'error');
+                return;
+            }
+            
+            updateTimerDisplay();
+            
+            // Main timer interval
+            timerInterval = setInterval(() => {
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                    updateTimerDisplay();
+                    
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        log('⏰ Timer expired!', 'error');
+                        document.getElementById('timer-status').textContent = 'Expired';
+                    }
+                } else {
+                    clearInterval(timerInterval);
+                    log('⚠️ Timer reached zero', 'error');
+                }
+            }, 1000);
+            
+            log(`✅ Timer started successfully! Interval ID: ${timerInterval}`, 'success');
+        }
+        
+        function resetTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                log('🔄 Timer reset', 'info');
+            }
+            timeRemaining = 0;
+            updateTimerDisplay();
+            document.getElementById('timer-status').textContent = 'Ready';
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const timerEl = document.getElementById('timer');
+            
+            timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Change timer color based on time remaining
+            timerEl.className = 'timer';
+            if (timeRemaining <= 3) {
+                timerEl.className = 'timer critical';
+            } else if (timeRemaining <= 5) {
+                timerEl.className = 'timer warning';
+            }
+        }
+        
+        // NAVIGATION FUNCTIONS
+        function nextQuestion() {
+            log('▶️ Next button clicked', 'info');
+            
+            if (currentQuestion < totalQuestions - 1) {
+                currentQuestion++;
+                log(`Moving to question: ${currentQuestion + 1}`, 'success');
+                updateNavigation();
+            } else {
+                log('Already at last question', 'info');
+            }
+        }
+        
+        function previousQuestion() {
+            log('◀️ Previous button clicked', 'info');
+            
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                log(`Moving to question: ${currentQuestion + 1}`, 'success');
+                updateNavigation();
+            } else {
+                log('Already at first question', 'info');
+            }
+        }
+        
+        function goToQuestion(questionIndex) {
+            log(`🎯 Navigation button clicked for question: ${questionIndex + 1}`, 'info');
+            
+            currentQuestion = questionIndex;
+            updateNavigation();
+            log(`Jumped to question: ${currentQuestion + 1}`, 'success');
+        }
+        
+        function updateNavigation() {
+            // Update current question display
+            document.getElementById('current-question').textContent = currentQuestion + 1;
+            
+            // Update button states
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentQuestion <= 0;
+            nextBtn.disabled = currentQuestion >= totalQuestions - 1;
+            
+            // Update question grid
+            document.querySelectorAll('.question-num-btn').forEach((btn, index) => {
+                btn.className = 'question-num-btn';
+                
+                if (index === currentQuestion) {
+                    btn.classList.add('current');
+                } else if (answeredQuestions[index]) {
+                    btn.classList.add('answered');
+                }
+            });
+        }
+        
+        // Initialize display
+        updateTimerDisplay();
+        updateNavigation();
+        
+        log('🎉 All systems ready!', 'success');
+    </script>
+</body>
+</html>

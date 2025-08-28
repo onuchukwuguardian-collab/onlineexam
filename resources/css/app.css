@@ -1,0 +1,61 @@
+/* resources/css/app.css */
+
+/* Font Awesome (local) */
+@import '@fortawesome/fontawesome-free/css/all.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* You can add your custom global styles or component classes below */
+/* For example, the .admin-input, .admin-btn-primary we discussed */
+@layer components {
+  .admin-input {
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 sm:text-sm;
+  }
+  .admin-file-input {
+    @apply block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-700 file:text-indigo-700 dark:file:text-indigo-200 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-600 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+  }
+  .admin-input-checkbox {
+      @apply rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800;
+  }
+  .admin-label {
+      @apply block text-sm font-medium text-gray-700 dark:text-gray-300;
+  }
+  .admin-btn-primary {
+    @apply inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150;
+  }
+  .admin-btn-secondary {
+    @apply inline-flex items-center px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-200 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150;
+  }
+  .admin-btn-green {
+    @apply inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150;
+  }
+  .admin-btn-red {
+    @apply inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150;
+  }
+  .admin-edit-btn {
+     @apply text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300;
+  }
+  .admin-delete-btn {
+     @apply text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300;
+  }
+  .admin-card {
+    @apply bg-white dark:bg-gray-800 shadow-lg rounded-xl p-4 sm:p-6;
+  }
+  .admin-th {
+    @apply px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider;
+  }
+  .admin-td {
+    @apply px-4 py-3 text-sm text-gray-700 dark:text-gray-200;
+  }
+  .nav-link {
+    @apply flex items-center px-3 py-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-150 ease-in-out;
+  }
+  .nav-link.active {
+    @apply bg-blue-600 text-white font-semibold;
+  }
+  .nav-text {
+    @apply text-sm;
+  }
+}

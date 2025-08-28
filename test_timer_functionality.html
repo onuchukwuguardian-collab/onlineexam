@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer Auto-Submit Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .timer.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .timer.critical {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .time-up-notification {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .time-up-notification.show {
+            display: flex;
+            opacity: 1;
+        }
+        .notification-content {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .notification-content i {
+            font-size: 3rem;
+            color: #f59e0b;
+            margin-bottom: 1rem;
+        }
+        .notification-content h3 {
+            font-size: 1.5rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        .notification-content p {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        .countdown {
+            font-weight: bold;
+            color: #dc3545;
+            font-size: 1.2em;
+            background: #fff3cd;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #ffeaa7;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Timer Auto-Submit Test</h1>
+        <p>This test simulates the exam timer functionality. Set a short timer to test the auto-submit behavior.</p>
+        
+        <div class="timer" id="timer">05:00</div>
+        
+        <div class="controls">
+            <button onclick="startTimer(300)">Start 5 Min Timer</button>
+            <button onclick="startTimer(10)">Start 10 Sec Timer</button>
+            <button onclick="startTimer(5)">Start 5 Sec Timer</button>
+            <button onclick="resetTimer()">Reset</button>
+        </div>
+        
+        <div class="log" id="log">
+            <div>Timer test ready. Click a button to start.</div>
+        </div>
+    </div>
+
+    <!-- Time Up Notification -->
+    <div id="timeUpNotification" class="time-up-notification">
+        <div class="notification-content">
+            <i>⏰</i>
+            <h3>Time is up!</h3>
+            <p>Your exam will be submitted automatically in <span class="countdown">3</span> seconds...</p>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        let timeRemaining = 0;
+        let timerInterval = null;
+        let examSubmitting = false;
+
+        function log(message) {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.innerHTML += `<div>[${time}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function startTimer(seconds) {
+            resetTimer();
+            timeRemaining = seconds;
+            examSubmitting = false;
+            
+            log(`Starting timer with ${seconds} seconds`);
+            
+            timerInterval = setInterval(() => {
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                    updateTimerDisplay();
+                    
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        autoSubmitExam();
+                    }
+                }
+            }, 1000);
+            
+            updateTimerDisplay();
+        }
+
+        function resetTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            timeRemaining = 0;
+            examSubmitting = false;
+            updateTimerDisplay();
+            hideTimeUpNotification();
+            log('Timer reset');
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const timerEl = document.getElementById('timer');
+            
+            timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Change timer color based on time remaining
+            timerEl.className = 'timer';
+            if (timeRemaining <= 5) {
+                timerEl.className = 'timer critical';
+            } else if (timeRemaining <= 10) {
+                timerEl.className = 'timer warning';
+            }
+        }
+
+        function autoSubmitExam() {
+            if (examSubmitting) {
+                return;
+            }
+            examSubmitting = true;
+            
+            log('Time expired! Auto-submitting exam...');
+            showTimeUpNotification();
+            
+            // Submit after 3 seconds with countdown
+            let countdown = 3;
+            const countdownInterval = setInterval(() => {
+                const notification = document.querySelector('.time-up-notification');
+                if (notification) {
+                    const countdownEl = notification.querySelector('.countdown');
+                    if (countdownEl) {
+                        countdownEl.textContent = countdown;
+                    }
+                }
+                countdown--;
+                
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    forceSubmitExam();
+                }
+            }, 1000);
+        }
+
+        function showTimeUpNotification() {
+            const notification = document.getElementById('timeUpNotification');
+            notification.style.display = 'flex';
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            log('Showing time up notification');
+        }
+
+        function hideTimeUpNotification() {
+            const notification = document.getElementById('timeUpNotification');
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 300);
+        }
+
+        function forceSubmitExam() {
+            log('Force submitting exam...');
+            
+            // Update notification to show submitting
+            const notification = document.querySelector('.time-up-notification');
+            if (notification) {
+                const content = notification.querySelector('.notification-content');
+                content.innerHTML = `
+                    <i>📤</i>
+                    <h3>Submitting Exam...</h3>
+                    <p>Please wait while your answers are being saved...</p>
+                    <div class="loading-spinner"></div>
+                `;
+            }
+            
+            // Simulate form submission
+            setTimeout(() => {
+                log('✅ Exam submitted successfully!');
+                hideTimeUpNotification();
+                alert('Exam submitted! In the real system, you would be redirected to the score page.');
+            }, 2000);
+        }
+
+        // Initialize display
+        updateTimerDisplay();
+    </script>
+</body>
+</html>

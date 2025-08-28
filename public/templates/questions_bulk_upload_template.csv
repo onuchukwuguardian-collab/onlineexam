@@ -1,0 +1,11 @@
+question_text,correct_answer,option_a_text,option_b_text,option_c_text,option_d_text,option_e_text
+"What is the capital of France?",A,"Paris","London","Berlin","Madrid","Rome"
+"Which planet is known as the Red Planet?",B,"Venus","Mars","Jupiter","Saturn","Mercury"
+"What is 2 + 2?",A,"4","3","5","6",""
+"Who wrote Romeo and Juliet?",C,"Charles Dickens","Mark Twain","William Shakespeare","Jane Austen",""
+"What is the largest ocean on Earth?",A,"Pacific Ocean","Atlantic Ocean","Indian Ocean","",""
+"Which programming language is known for its use in web development and has a snake as its mascot?",B,"Java","Python","C++","JavaScript",""
+"In mathematics, what is the value of π (pi) approximately?",C,"2.14","3.41","3.14","4.13",""
+"What does HTML stand for?",A,"HyperText Markup Language","High Tech Modern Language","Home Tool Markup Language","Hyperlink and Text Markup Language",""
+"Which of the following is NOT a primary color?",D,"Red","Blue","Yellow","Green",""
+"What is the chemical symbol for water?",B,"HO","H2O","H3O","OH",""

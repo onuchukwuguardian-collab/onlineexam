@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Switching Red Warning Test</title>
+    <meta name="csrf-token" content="test-token">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #c82333;
+        }
+        .instructions {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .warning-demo {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🚫 Tab Switching Red Warning Screen Test</h1>
+        
+        <div class="instructions">
+            <h3>📋 Test Instructions:</h3>
+            <ol>
+                <li><strong>Press Ctrl+T</strong> - Should show red warning screen</li>
+                <li><strong>Press Alt+Tab</strong> - Should show red warning screen</li>
+                <li><strong>Right-click</strong> - Should show "Right-click disabled" message</li>
+                <li><strong>Click buttons below</strong> - To test different warning types</li>
+            </ol>
+        </div>
+        
+        <div class="warning-demo">
+            <h4>⚠️ Expected Behavior:</h4>
+            <ul>
+                <li><strong>1st & 2nd violations:</strong> Red screen with CONTINUE button</li>
+                <li><strong>3rd violation:</strong> Red screen with NO CONTINUE button (permanent ban)</li>
+                <li><strong>All attempts:</strong> Background turns RED covering entire page</li>
+            </ul>
+        </div>
+        
+        <h3>🧪 Test Different Warning Types:</h3>
+        <button class="test-button" onclick="testCriticalWarning()">Test Critical Warning</button>
+        <button class="test-button" onclick="testContinueWarning()">Test Continue Warning</button>
+        <button class="test-button" onclick="testPermanentBlock()">Test Permanent Block</button>
+        <button class="test-button" onclick="clearWarnings()">Clear All Warnings</button>
+        
+        <h3>📊 System Status:</h3>
+        <div id="status">
+            <p>✅ Tab switching detection: <span id="tabDetectionStatus">Active</span></p>
+            <p>✅ Warning functions: <span id="warningFunctionStatus">Loaded</span></p>
+            <p>✅ Event listeners: <span id="eventListenerStatus">Active</span></p>
+        </div>
+        
+        <h3>🔍 Debug Console:</h3>
+        <div id="debug" style="background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; min-height: 100px; border: 1px solid #dee2e6;">
+            <div>System ready - Try pressing Ctrl+T or Alt+Tab...</div>
+        </div>
+    </div>
+
+    <script>
+        // Debug logging
+        function log(message) {
+            const debug = document.getElementById('debug');
+            const time = new Date().toLocaleTimeString();
+            debug.innerHTML += `<div>[${time}] ${message}</div>`;
+            debug.scrollTop = debug.scrollHeight;
+            console.log(`[TAB-SWITCH-TEST] ${message}`);
+        }
+        
+        log('Initializing tab switching detection test...');
+        
+        // Initialize tab switching detection
+        let tabSwitchCount = 0;
+        let isExamActive = true;
+        
+        // Show CRITICAL warning with red background screen
+        function showCriticalWarning(message) {
+            log('🚨 CRITICAL WARNING TRIGGERED: ' + message);
+            
+            // Remove any existing warnings first
+            clearWarnings();
+            
+            // Create a modal-style critical warning that covers entire screen
+            const warning = document.createElement('div');
+            warning.id = 'criticalWarning';
+            warning.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(220, 53, 69, 0.95);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 99999;
+                font-size: 18px;
+                font-weight: bold;
+                text-align: center;
+                padding: 20px;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #dc3545;
+                padding: 40px;
+                border-radius: 15px;
+                border: 3px solid white;
+                max-width: 700px;
+                box-shadow: 0 0 30px rgba(0,0,0,0.8);
+                animation: pulse 2s infinite;
+            `;
+            
+            content.innerHTML = `
+                <div style="font-size: 28px; margin-bottom: 25px;">
+                    🚨 CRITICAL SECURITY WARNING 🚨
+                </div>
+                <div style="margin-bottom: 25px; line-height: 1.5;">
+                    ${message}
+                </div>
+                <div style="margin-bottom: 30px; font-size: 16px; opacity: 0.9;">
+                    This incident has been recorded and reported to administrators.
+                </div>
+                <div style="font-size: 14px; opacity: 0.8;">
+                    You will be redirected to the login page shortly.
+                </div>
+            `;
+            
+            warning.appendChild(content);
+            document.body.appendChild(warning);
+            
+            // Add pulsing animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                    100% { transform: scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Auto-close after 5 seconds
+            setTimeout(() => {
+                if (warning.parentNode) {
+                    warning.remove();
+                    log('Critical warning auto-closed');
+                }
+            }, 5000);
+        }
+        
+        // Show warning with CONTINUE button (for 1st and 2nd attempts)
+        function showContinueWarning(message, isPermanent = false) {
+            log('⚠️ CONTINUE WARNING TRIGGERED: ' + message);
+            
+            // Remove any existing warnings first
+            clearWarnings();
+            
+            // Create a modal-style warning with continue button
+            const warning = document.createElement('div');
+            warning.id = 'tabSwitchWarning';
+            warning.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(220, 53, 69, 0.95);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 99999;
+                font-size: 18px;
+                font-weight: bold;
+                text-align: center;
+                padding: 20px;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #dc3545;
+                padding: 40px;
+                border-radius: 15px;
+                border: 3px solid white;
+                max-width: 700px;
+                box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            `;
+            
+            content.innerHTML = `
+                <div style="font-size: 28px; margin-bottom: 25px;">
+                    ⚠️ SECURITY VIOLATION DETECTED ⚠️
+                </div>
+                <div style="margin-bottom: 25px; line-height: 1.5;">
+                    ${message}
+                </div>
+                <div style="margin-bottom: 30px; font-size: 16px; opacity: 0.9;">
+                    This incident has been recorded and reported to administrators.
+                </div>
+                <button id="continueExamBtn" style="
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    font-size: 18px;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                    transition: all 0.2s;
+                " onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
+                    ✅ CONTINUE EXAM
+                </button>
+            `;
+            
+            warning.appendChild(content);
+            document.body.appendChild(warning);
+            
+            // Add click handler for continue button
+            document.getElementById('continueExamBtn').addEventListener('click', function() {
+                warning.remove();
+                log('Student chose to continue exam after warning');
+            });
+        }
+        
+        // Show PERMANENT BLOCK warning (for 3rd attempt - NO CONTINUE BUTTON)
+        function showPermanentBlockWarning(message) {
+            log('🚫 PERMANENT BLOCK WARNING TRIGGERED: ' + message);
+            
+            // Remove any existing warnings first
+            clearWarnings();
+            
+            // Create a modal-style permanent block warning
+            const warning = document.createElement('div');
+            warning.id = 'permanentBlockWarning';
+            warning.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(139, 0, 0, 0.98);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 99999;
+                font-size: 18px;
+                font-weight: bold;
+                text-align: center;
+                padding: 20px;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #8b0000;
+                padding: 50px;
+                border-radius: 15px;
+                border: 4px solid #ff4444;
+                max-width: 800px;
+                box-shadow: 0 0 50px rgba(255,0,0,0.5);
+                animation: pulse 2s infinite;
+            `;
+            
+            content.innerHTML = `
+                <div style="font-size: 32px; margin-bottom: 30px;">
+                    🚫 PERMANENTLY BLOCKED 🚫
+                </div>
+                <div style="margin-bottom: 30px; line-height: 1.6; font-size: 20px;">
+                    ${message}
+                </div>
+                <div style="margin-bottom: 20px; font-size: 16px; opacity: 0.9;">
+                    You have exceeded the maximum number of tab switching attempts.
+                </div>
+                <div style="font-size: 16px; opacity: 0.9;">
+                    Contact your administrator for account reactivation.
+                </div>
+            `;
+            
+            warning.appendChild(content);
+            document.body.appendChild(warning);
+            
+            // Auto-redirect to login after 5 seconds
+            setTimeout(() => {
+                log('Would redirect to login page in real exam');
+                if (warning.parentNode) {
+                    warning.remove();
+                }
+            }, 5000);
+        }
+        
+        // Clear all warnings
+        function clearWarnings() {
+            const warnings = ['criticalWarning', 'tabSwitchWarning', 'permanentBlockWarning'];
+            warnings.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.remove();
+                    log('Cleared warning: ' + id);
+                }
+            });
+        }
+        
+        // Test functions
+        function testCriticalWarning() {
+            showCriticalWarning('🚨 TEST: This is a critical security warning! Tab switching detected during exam.');
+        }
+        
+        function testContinueWarning() {
+            tabSwitchCount++;
+            showContinueWarning(`⚠️ TAB SWITCHING BLOCKED! Attempt #${tabSwitchCount}/3. You have ${3 - tabSwitchCount} attempts remaining.`);
+        }
+        
+        function testPermanentBlock() {
+            showPermanentBlockWarning('🚫 PERMANENTLY BLOCKED: Too many tab switching attempts! You are now PERMANENTLY BLOCKED from this exam. Only an administrator can reactivate your account.');
+        }
+        
+        // ACTUAL TAB SWITCHING DETECTION
+        log('Setting up tab switching detection...');
+        
+        // Block ALL tab switching shortcuts completely
+        document.addEventListener('keydown', function(e) {
+            // Block ALL tab switching shortcuts completely
+            if ((e.altKey && e.key === 'Tab') || 
+                (e.ctrlKey && e.key === 'Tab') || 
+                (e.metaKey && e.key === 'Tab') ||
+                (e.ctrlKey && e.key === 't') || // Block Ctrl+T (new tab)
+                (e.ctrlKey && e.shiftKey && e.key === 'T')) { // Block Ctrl+Shift+T (reopen tab)
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Record attempt immediately
+                tabSwitchCount++;
+                
+                log(`🚫 TAB SWITCH ATTEMPT #${tabSwitchCount} BLOCKED!`);
+                
+                if (tabSwitchCount >= 3) {
+                    // PERMANENTLY BLOCKED after 3 attempts - NO CONTINUE BUTTON
+                    showPermanentBlockWarning('🚫 PERMANENTLY BLOCKED: Too many tab switching attempts! You are now PERMANENTLY BLOCKED from this exam. Only an administrator can reactivate your account.');
+                } else if (tabSwitchCount === 2) {
+                    // Second attempt - final warning with CONTINUE button
+                    showContinueWarning(`🚨 FINAL WARNING: Tab switching attempt #${tabSwitchCount}/3. ONE MORE ATTEMPT will permanently BLOCK you from this exam!`, false);
+                } else {
+                    // First attempt - warning with CONTINUE button
+                    showContinueWarning(`⚠️ TAB SWITCHING BLOCKED! Attempt #${tabSwitchCount}/3. You have ${3 - tabSwitchCount} attempts remaining.`, false);
+                }
+                
+                return false;
+            }
+        });
+        
+        // Block context menu (right-click)
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            showCriticalWarning('🚫 RIGHT-CLICK DISABLED: No context menu allowed during exam!');
+            log('Right-click blocked');
+            return false;
+        });
+        
+        // Detect when user switches away from the exam tab
+        document.addEventListener('visibilitychange', function() {
+            if (!isExamActive) {
+                return;
+            }
+            
+            if (document.hidden) {
+                // User switched away from exam tab
+                log('⚠️ TAB SWITCH DETECTED - User left exam tab');
+                tabSwitchCount++;
+                showCriticalWarning(`Tab switch violation #${tabSwitchCount} detected! You switched away from the exam tab. This incident has been recorded.`);
+            } else {
+                // User returned to exam tab
+                log('✅ User returned to exam tab');
+            }
+        });
+        
+        log('✅ Tab switching detection system is ACTIVE');
+        log('Try pressing Ctrl+T, Alt+Tab, or right-clicking to test!');
+        
+        // Update status display
+        document.getElementById('tabDetectionStatus').textContent = 'Active ✅';
+        document.getElementById('warningFunctionStatus').textContent = 'Loaded ✅';
+        document.getElementById('eventListenerStatus').textContent = 'Active ✅';
+        
+        // Test if functions exist
+        if (typeof showCriticalWarning === 'function') {
+            log('✅ showCriticalWarning function exists');
+        } else {
+            log('❌ showCriticalWarning function MISSING!');
+        }
+        
+        if (typeof showContinueWarning === 'function') {
+            log('✅ showContinueWarning function exists');
+        } else {
+            log('❌ showContinueWarning function MISSING!');
+        }
+        
+        if (typeof showPermanentBlockWarning === 'function') {
+            log('✅ showPermanentBlockWarning function exists');
+        } else {
+            log('❌ showPermanentBlockWarning function MISSING!');
+        }
+    </script>
+</body>
+</html>

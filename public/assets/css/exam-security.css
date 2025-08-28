@@ -1,0 +1,120 @@
+/**
+ * Exam Security and Reactivation System Styles
+ */
+
+/* Security Warning Modal */
+.security-violation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: securityFadeIn 0.3s ease;
+}
+
+@keyframes securityFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.security-violation-content {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    text-align: center;
+    animation: securitySlideIn 0.4s ease;
+}
+
+@keyframes securitySlideIn {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.violation-icon {
+    font-size: 48px;
+    color: #dc3545;
+    margin-bottom: 20px;
+}
+
+.violation-message h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.violation-description {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.violation-penalty {
+    font-weight: bold;
+    color: #dc3545;
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+.violation-actions {
+    margin-top: 25px;
+}
+
+/* Reactivation Section */
+.reactivation-section {
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    text-align: left;
+}
+
+.reactivation-section h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+#reactivationMessage {
+    width: 100%;
+    height: 100px;
+    margin: 10px 0 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+}
+
+.reactivation-status {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.reactivation-status.error {
+    color: #dc3545;
+}
+
+.reactivation-status.success {
+    color: #28a745;
+}
+
+.reactivation-status.pending {
+    color: #ffc107;
+}
+
+/* Security Warning Tooltip */
+.security-warning-tooltip {
+    position: fixed;
+    background-color: rgba(220, 53, 69, 0.95);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-weight: bold;
+}

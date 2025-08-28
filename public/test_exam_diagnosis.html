@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Diagnosis Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            text-align: center;
+            padding: 10px;
+            background: #fff;
+            border: 2px solid #e74c3c;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .question-block {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .question-block.active {
+            display: block;
+        }
+        .option {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .option:hover {
+            background: #f0f0f0;
+        }
+        .option.selected {
+            background: #007bff;
+            color: white;
+        }
+        .navigation {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .nav-btn:hover {
+            background: #0056b3;
+        }
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Exam Diagnosis Test</h1>
+        <p>This test simulates the basic functionality that should work on the student exam page.</p>
+        
+        <!-- Timer Display -->
+        <div class="timer" id="timer">05:00</div>
+        
+        <!-- Sample Questions -->
+        <div class="question-block active" id="question-0">
+            <h3>Question 1 of 3</h3>
+            <p><strong>What is the capital of France?</strong></p>
+            <div class="option" onclick="selectOption(0, 'A', this)">A) London</div>
+            <div class="option" onclick="selectOption(0, 'B', this)">B) Paris</div>
+            <div class="option" onclick="selectOption(0, 'C', this)">C) Berlin</div>
+            <div class="option" onclick="selectOption(0, 'D', this)">D) Rome</div>
+        </div>
+        
+        <div class="question-block" id="question-1">
+            <h3>Question 2 of 3</h3>
+            <p><strong>What is 2 + 2?</strong></p>
+            <div class="option" onclick="selectOption(1, 'A', this)">A) 3</div>
+            <div class="option" onclick="selectOption(1, 'B', this)">B) 4</div>
+            <div class="option" onclick="selectOption(1, 'C', this)">C) 5</div>
+            <div class="option" onclick="selectOption(1, 'D', this)">D) 6</div>
+        </div>
+        
+        <div class="question-block" id="question-2">
+            <h3>Question 3 of 3</h3>
+            <p><strong>What color is the sky?</strong></p>
+            <div class="option" onclick="selectOption(2, 'A', this)">A) Green</div>
+            <div class="option" onclick="selectOption(2, 'B', this)">B) Red</div>
+            <div class="option" onclick="selectOption(2, 'C', this)">C) Blue</div>
+            <div class="option" onclick="selectOption(2, 'D', this)">D) Yellow</div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" onclick="previousQuestion()" disabled>← Previous</button>
+            <span id="questionInfo">Question 1 of 3</span>
+            <button class="nav-btn" id="nextBtn" onclick="nextQuestion()">Next →</button>
+        </div>
+        
+        <!-- Test Controls -->
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="nav-btn" onclick="startTimer(300)">Start 5 Min Timer</button>
+            <button class="nav-btn" onclick="startTimer(10)">Start 10 Sec Timer</button>
+            <button class="nav-btn" onclick="resetTest()">Reset Test</button>
+        </div>
+        
+        <div class="log" id="log">
+            <div>Exam diagnosis test ready. All functions should work properly here.</div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        const totalQuestions = 3;
+        let timeRemaining = 300; // 5 minutes
+        let timerInterval = null;
+        let answers = {};
+
+        function log(message) {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.innerHTML += `<div>[${time}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function selectOption(questionIndex, answer, element) {
+            log(`Selected option ${answer} for question ${questionIndex + 1}`);
+            
+            // Remove selection from all options in this question
+            const questionBlock = document.getElementById(`question-${questionIndex}`);
+            questionBlock.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Select this option
+            element.classList.add('selected');
+            answers[questionIndex] = answer;
+            
+            log(`Answer saved: Question ${questionIndex + 1} = ${answer}`);
+        }
+
+        function nextQuestion() {
+            log('nextQuestion() called');
+            
+            if (currentQuestion < totalQuestions - 1) {
+                // Hide current question
+                document.getElementById(`question-${currentQuestion}`).classList.remove('active');
+                
+                // Move to next question
+                currentQuestion++;
+                
+                // Show next question
+                document.getElementById(`question-${currentQuestion}`).classList.add('active');
+                
+                updateNavigation();
+                log(`Moved to question ${currentQuestion + 1}`);
+            } else {
+                log('Already at last question');
+            }
+        }
+
+        function previousQuestion() {
+            log('previousQuestion() called');
+            
+            if (currentQuestion > 0) {
+                // Hide current question
+                document.getElementById(`question-${currentQuestion}`).classList.remove('active');
+                
+                // Move to previous question
+                currentQuestion--;
+                
+                // Show previous question
+                document.getElementById(`question-${currentQuestion}`).classList.add('active');
+                
+                updateNavigation();
+                log(`Moved to question ${currentQuestion + 1}`);
+            } else {
+                log('Already at first question');
+            }
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const questionInfo = document.getElementById('questionInfo');
+            
+            // Update question info
+            questionInfo.textContent = `Question ${currentQuestion + 1} of ${totalQuestions}`;
+            
+            // Update button states
+            prevBtn.disabled = (currentQuestion === 0);
+            nextBtn.disabled = (currentQuestion === totalQuestions - 1);
+            
+            if (currentQuestion === totalQuestions - 1) {
+                nextBtn.textContent = 'Submit';
+                nextBtn.onclick = function() {
+                    submitExam();
+                };
+            } else {
+                nextBtn.textContent = 'Next →';
+                nextBtn.onclick = function() {
+                    nextQuestion();
+                };
+            }
+        }
+
+        function submitExam() {
+            log('submitExam() called');
+            clearInterval(timerInterval);
+            
+            let score = 0;
+            const correctAnswers = {0: 'B', 1: 'B', 2: 'C'};
+            
+            for (let i = 0; i < totalQuestions; i++) {
+                if (answers[i] === correctAnswers[i]) {
+                    score++;
+                }
+            }
+            
+            alert(`Exam submitted! Score: ${score}/${totalQuestions}`);
+            log(`Exam submitted. Score: ${score}/${totalQuestions}`);
+        }
+
+        function startTimer(seconds) {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timeRemaining = seconds;
+            log(`Timer started with ${seconds} seconds`);
+            
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmitExam();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Change color based on time remaining
+            if (timeRemaining <= 60) {
+                timerEl.style.color = '#e74c3c';
+                timerEl.style.backgroundColor = '#fff5f5';
+            } else if (timeRemaining <= 120) {
+                timerEl.style.color = '#f39c12';
+                timerEl.style.backgroundColor = '#fffbf0';
+            }
+        }
+
+        function autoSubmitExam() {
+            log('Time expired! Auto-submitting exam...');
+            alert('Time is up! Your exam has been automatically submitted.');
+            submitExam();
+        }
+
+        function resetTest() {
+            log('Test reset');
+            currentQuestion = 0;
+            answers = {};
+            timeRemaining = 300;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            // Hide all questions
+            document.querySelectorAll('.question-block').forEach(block => {
+                block.classList.remove('active');
+            });
+            
+            // Show first question
+            document.getElementById('question-0').classList.add('active');
+            
+            // Clear all selections
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            updateNavigation();
+            updateTimerDisplay();
+        }
+
+        // Initialize
+        updateNavigation();
+        updateTimerDisplay();
+        log('Test initialized successfully');
+    </script>
+</body>
+</html>

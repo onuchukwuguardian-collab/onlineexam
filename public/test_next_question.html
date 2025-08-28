@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Next Question Function</title>
+    <style>
+        .question-block { display: none; padding: 20px; border: 1px solid #ccc; margin: 10px 0; }
+        .question-block.active { display: block; }
+        .nav-btn { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Next Question Functionality</h1>
+    
+    <div id="current-question-display">Question 1 of 3</div>
+    
+    <div class="question-block active" id="question-0">
+        <h3>Question 1</h3>
+        <p>This is question 1</p>
+        <label><input type="radio" name="q1" value="A"> Option A</label><br>
+        <label><input type="radio" name="q1" value="B"> Option B</label><br>
+        <label><input type="radio" name="q1" value="C"> Option C</label>
+    </div>
+    
+    <div class="question-block" id="question-1">
+        <h3>Question 2</h3>
+        <p>This is question 2</p>
+        <label><input type="radio" name="q2" value="A"> Option A</label><br>
+        <label><input type="radio" name="q2" value="B"> Option B</label><br>
+        <label><input type="radio" name="q2" value="C"> Option C</label>
+    </div>
+    
+    <div class="question-block" id="question-2">
+        <h3>Question 3</h3>
+        <p>This is question 3</p>
+        <label><input type="radio" name="q3" value="A"> Option A</label><br>
+        <label><input type="radio" name="q3" value="B"> Option B</label><br>
+        <label><input type="radio" name="q3" value="C"> Option C</label>
+    </div>
+    
+    <div>
+        <button type="button" id="prevBtn" class="nav-btn" onclick="previousQuestion()" style="display: none;">← Previous</button>
+        <button type="button" id="nextBtn" class="nav-btn" onclick="nextQuestion()">Next →</button>
+        <button type="button" id="submitBtn" class="nav-btn" style="display: none;">Submit</button>
+    </div>
+    
+    <div id="debug-info" style="margin-top: 20px; padding: 10px; background: #f0f0f0;">
+        <strong>Debug Info:</strong><br>
+        Current Question: <span id="debug-current">0</span><br>
+        Total Questions: <span id="debug-total">3</span>
+    </div>
+
+    <script>
+        // Simple, clean implementation
+        const totalQuestions = 3;
+        let currentQuestion = 0;
+
+        function nextQuestion() {
+            console.log('nextQuestion called. Current:', currentQuestion, 'Total:', totalQuestions);
+            
+            if (currentQuestion < totalQuestions - 1) {
+                currentQuestion++;
+                console.log('Moving to question:', currentQuestion + 1);
+                showCurrentQuestion();
+            } else {
+                console.log('Already at last question');
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showCurrentQuestion();
+            }
+        }
+
+        function showCurrentQuestion() {
+            console.log('Showing question:', currentQuestion + 1);
+            
+            // Hide all questions
+            document.querySelectorAll('.question-block').forEach(block => {
+                block.classList.remove('active');
+                block.style.display = 'none';
+            });
+            
+            // Show current question
+            const currentBlock = document.getElementById(`question-${currentQuestion}`);
+            if (currentBlock) {
+                currentBlock.classList.add('active');
+                currentBlock.style.display = 'block';
+            }
+            
+            // Update displays
+            document.getElementById('current-question-display').textContent = 
+                `Question ${currentQuestion + 1} of ${totalQuestions}`;
+            document.getElementById('debug-current').textContent = currentQuestion;
+            
+            updateNavigation();
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Show/hide previous button
+            prevBtn.style.display = currentQuestion > 0 ? 'inline-block' : 'none';
+            
+            // Show next or submit button
+            if (currentQuestion === totalQuestions - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showCurrentQuestion();
+        });
+    </script>
+</body>
+</html>

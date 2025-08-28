@@ -1,0 +1,8 @@
+name,email,password,role,class_name,registration_number,unique_id
+Miriam Mary,,pass12345,user,JSS1,5000000001,SCH001DAV
+John Smith,john.smith@example.com,pass12345,user,JSS2,5000000002,SCH002BLE
+Sarah Johnson,,pass12345,user,JSS3,5000000003,SCH003COR
+Michael Brown,,pass12345,user,SS1,2000000001,SCH004DEN
+Emma Wilson,emma.wilson@example.com,pass12345,user,SS2,2000000002,SCH005ELF
+David Davis,,pass12345,user,SS3,2000000003,SCH006FOX
+Admin User,admin.user@example.com,adminpass123,admin,,,,

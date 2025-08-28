@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="">
+    <title>Subjects Dropdown Debug</title>
+    <script src="public/assets/js/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        select { width: 300px; padding: 8px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Subjects Dropdown Debug Test</h1>
+    
+    <div class="debug">
+        <strong>Instructions:</strong><br>
+        1. Open browser developer tools (F12)<br>
+        2. Go to Console tab<br>
+        3. Select a class below<br>
+        4. Watch for AJAX requests and errors
+    </div>
+    
+    <label for="class_id">Select Class:</label>
+    <select id="class_id" name="class_id">
+        <option value="">Select Class</option><option value="8">JSS1 (6 subjects)</option><option value="9">JSS2 (0 subjects)</option><option value="10">JSS3 (0 subjects)</option><option value="11">SS1 (5 subjects)</option><option value="12">SS2 (5 subjects)</option><option value="13">SS3 (0 subjects)</option><option value="14">SYSTEM CLASS (0 subjects)</option>    </select>
+    
+    <br><br>
+    <label for="subject_id">Subjects (should populate):</label>
+    <select id="subject_id" name="subject_id">
+        <option value="">Select Subject</option>
+    </select>
+    
+    <div id="debug-output" class="debug"></div>
+    
+    <script>
+        $(document).ready(function() {
+            console.log("🔧 Debug script loaded");
+            
+            // Setup CSRF token for all AJAX requests
+            $.ajaxSetup({
+                headers: {
+                    "X-CSRF-TOKEN": $("meta[name=csrf-token]").attr("content")
+                }
+            });
+            
+            console.log("🔧 CSRF token:", $("meta[name=csrf-token]").attr("content"));
+            
+            // Load subjects when class is selected
+            $("#class_id").change(function() {
+                const classId = $(this).val();
+                const subjectSelect = $("#subject_id");
+                const debugOutput = $("#debug-output");
+                
+                console.log("🔧 Class selected:", classId);
+                
+                subjectSelect.html("<option value=\"\">Loading...</option>");
+                debugOutput.html("<div class=\"debug\">Loading subjects for class " + classId + "...</div>");
+                
+                if (classId) {
+                    const url = `/admin/exam-reset/subjects/${classId}`;
+                    console.log("🔧 Making AJAX request to:", url);
+                    
+                    $.ajax({
+                        url: url,
+                        method: "GET",
+                        headers: {
+                            "X-CSRF-TOKEN": $("meta[name=csrf-token]").attr("content"),
+                            "X-Requested-With": "XMLHttpRequest"
+                        },
+                        beforeSend: function(xhr) {
+                            console.log("🔧 Request headers:", xhr.getAllResponseHeaders());
+                        },
+                        success: function(subjects) {
+                            console.log("🔧 Success response:", subjects);
+                            
+                            subjectSelect.html("<option value=\"\">Select Subject</option>");
+                            subjects.forEach(function(subject) {
+                                subjectSelect.append(`<option value="${subject.id}">${subject.name}</option>`);
+                            });
+                            
+                            debugOutput.html(`<div class="success">✅ Successfully loaded ${subjects.length} subjects</div>`);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("🔧 AJAX Error:", {
+                                status: xhr.status,
+                                statusText: xhr.statusText,
+                                responseText: xhr.responseText,
+                                error: error
+                            });
+                            
+                            subjectSelect.html("<option value=\"\">Error loading subjects</option>");
+                            
+                            let errorMsg = `Status: ${xhr.status}, Error: ${error}`;
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMsg += `, Message: ${xhr.responseJSON.message}`;
+                            }
+                            
+                            debugOutput.html(`<div class="error">❌ Error: ${errorMsg}</div>`);
+                        }
+                    });
+                } else {
+                    subjectSelect.html("<option value=\"\">Select Subject</option>");
+                    debugOutput.html("");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

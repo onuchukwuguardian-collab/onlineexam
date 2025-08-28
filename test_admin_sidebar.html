@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sidebar Test</title>
+    <!-- Local FontAwesome CSS -->
+    <link rel="stylesheet" href="public/assets/css/fontawesome.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; }
+        
+        /* Layout */
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar { 
+            width: 260px; 
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            color: white; 
+            padding: 0; 
+            overflow-y: auto; 
+            max-height: 100vh;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            bottom: 0;
+            z-index: 40;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+            border-right: 1px solid #374151;
+        }
+        .admin-sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+        }
+        .admin-main { flex: 1; background: #f9fafb; margin-left: 260px; min-height: calc(100vh - 70px); }
+        .admin-nav { background: #1f2937; color: white; padding: 1rem; position: fixed; top: 0; left: 0; right: 0; z-index: 50; height: 70px; }
+        .admin-content { padding: 2rem; padding-top: 2rem; }
+        
+        /* Navigation */
+        .nav-brand { font-size: 1.5rem; font-weight: bold; color: white; text-decoration: none; }
+        .nav-menu { 
+            list-style: none; 
+            padding: 1.5rem 0 2rem 0; 
+            margin: 0;
+        }
+        .nav-item { margin: 0.125rem 0; }
+        .nav-link { 
+            display: flex; 
+            align-items: center; 
+            padding: 1rem 1.5rem; 
+            color: #d1d5db; 
+            text-decoration: none; 
+            border-radius: 0.5rem; 
+            margin: 0 1rem; 
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-link:hover, .nav-link.active { 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white; 
+            transform: translateX(6px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .nav-link:hover {
+            background: linear-gradient(135deg, #4f46e5, #3730a3);
+        }
+        .nav-link i { 
+            margin-right: 1rem; 
+            width: 1.5rem; 
+            text-align: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover i, .nav-link.active i {
+            transform: scale(1.1);
+            color: #fbbf24;
+        }
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: #3b82f6;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        .nav-link.active::before {
+            transform: scaleY(1);
+        }
+        
+        /* Custom Scrollbar */
+        .admin-sidebar::-webkit-scrollbar { width: 6px; }
+        .admin-sidebar::-webkit-scrollbar-track { background: #374151; }
+        .admin-sidebar::-webkit-scrollbar-thumb { 
+            background: #6b7280; 
+            border-radius: 3px; 
+        }
+        .admin-sidebar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        
+        /* Firefox Scrollbar */
+        .admin-sidebar { 
+            scrollbar-width: thin; 
+            scrollbar-color: #6b7280 #374151; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Nav -->
+    <nav class="admin-nav">
+        <div style="display: flex; align-items: center; justify-content: between;">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-shield-alt"></i> Admin Portal
+            </a>
+            <div style="margin-left: auto;">
+                <span style="color: white;">
+                    <i class="fas fa-user-circle"></i> Hi, Super Administrator
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-user-graduate"></i> Students & Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-chalkboard-teacher"></i> Classes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-book-open"></i> Subjects & Questions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-trophy"></i> Scoreboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-redo-alt"></i> Exam Reset
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-server"></i> System Management
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-content">
+                <div style="background: white; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h2 style="color: #1f2937; margin-bottom: 1rem;">Admin Sidebar Test</h2>
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">This page demonstrates the improved admin sidebar with proper FontAwesome icons and enhanced styling.</p>
+                    
+                    <div style="background: #f3f4f6; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="color: #1f2937; margin-bottom: 1rem;">Sidebar Improvements:</h3>
+                        <ul style="color: #4b5563; line-height: 1.6;">
+                            <li>✅ <strong>Local FontAwesome</strong> - Reliable icon loading for production</li>
+                            <li>✅ <strong>Enhanced Icons</strong> - Larger, more prominent icons with hover effects</li>
+                            <li>✅ <strong>Gradient Background</strong> - Modern gradient sidebar background</li>
+                            <li>✅ <strong>Smooth Animations</strong> - Hover effects with scale and color transitions</li>
+                            <li>✅ <strong>Active State Indicator</strong> - Blue left border for active menu items</li>
+                            <li>✅ <strong>Better Spacing</strong> - Improved padding and margins</li>
+                            <li>✅ <strong>Professional Styling</strong> - Box shadows and rounded corners</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #dbeafe; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6;">
+                        <h4 style="color: #1e40af; margin-bottom: 0.5rem;">Icon Test Results:</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <div style="display: flex; align-items: center; color: #1f2937;">
+                                <i class="fas fa-tachometer-alt" style="margin-right: 0.5rem; color: #3b82f6;"></i>
+                                Dashboard Icon
+                            </div>
+                            <div style="display: flex; align-items: center; color: #1f2937;">
+                                <i class="fas fa-user-graduate" style="margin-right: 0.5rem; color: #10b981;"></i>
+                                Students Icon
+                            </div>
+                            <div style="display: flex; align-items: center; color: #1f2937;">
+                                <i class="fas fa-chalkboard-teacher" style="margin-right: 0.5rem; color: #f59e0b;"></i>
+                                Classes Icon
+                            </div>
+                            <div style="display: flex; align-items: center; color: #1f2937;">
+                                <i class="fas fa-book-open" style="margin-right: 0.5rem; color: #8b5cf6;"></i>
+                                Subjects Icon
+                            </div>
+                            <div style="display: flex; align-items: center; color: #1f2937;">
+                                <i class="fas fa-trophy" style="margin-right: 0.5rem; color: #f59e0b;"></i>
+                                Scoreboard Icon
+                            </div>
+                            <div style="display: flex; align-items: center; color: #1f2937;">
+                                <i class="fas fa-redo-alt" style="margin-right: 0.5rem; color: #ef4444;"></i>
+                                Reset Icon
+                            </div>
+                            <div style="display: flex; align-items: center; color: #1f2937;">
+                                <i class="fas fa-server" style="margin-right: 0.5rem; color: #6b7280;"></i>
+                                System Icon
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Add click handlers for demo
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
