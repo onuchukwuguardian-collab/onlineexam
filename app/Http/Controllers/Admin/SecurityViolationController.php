@@ -32,9 +32,14 @@ class SecurityViolationController extends Controller
         $bannedStudents = ExamBan::with(['user:id,name,email,registration_number', 'subject:id,name'])
             ->where('is_active', true)
             ->orderBy('banned_at', 'desc')
-            ->paginate(10);
+            ->paginate(10, ['*'], 'active_bans');
         
-        return view('admin.security.index', compact('stats', 'violations', 'bannedStudents'));
+        // Get all bans (for historical view)
+        $allBans = ExamBan::with(['user:id,name,email,registration_number', 'subject:id,name'])
+            ->orderBy('banned_at', 'desc')
+            ->paginate(10, ['*'], 'all_bans');
+
+        return view('admin.security.index', compact('stats', 'violations', 'bannedStudents', 'allBans'));
     }
     
     /**

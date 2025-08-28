@@ -13,7 +13,7 @@ class SubjectController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Subject::with('classModel')->orderBy('name');
+        $query = Subject::with('classModel')->withCount('questions')->orderBy('name');
         if ($request->class_id_filter) {
             $query->where('class_id', $request->class_id_filter);
         }

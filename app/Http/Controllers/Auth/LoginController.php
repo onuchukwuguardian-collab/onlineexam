@@ -30,64 +30,41 @@ class LoginController extends Controller
 
         $identifier = trim($request->input('identifier'));
         $password = $request->input('password');
-        
-        // Prevent SQL injection by sanitizing identifier
-        $identifier = filter_var($identifier, FILTER_SANITIZE_STRING);
 
-        try {
-            // Attempt to log in with email
-            if (Auth::attempt(['email' => $identifier, 'password' => $password], $request->filled('remember'))) {
-                $request->session()->regenerate();
-                return $this->authenticated($request, Auth::user());
-            }
+        // Attempt to log in with email
+        if (Auth::attempt(['email' => $identifier, 'password' => $password], $request->filled('remember'))) {
+            $request->session()->regenerate();
+            return $this->authenticated($request, Auth::user());
+        }
 
-            // Attempt to log in with registration_number
-            if (Auth::attempt(['registration_number' => $identifier, 'password' => $password], $request->filled('remember'))) {
-                $request->session()->regenerate();
-                return $this->authenticated($request, Auth::user());
-            }
+        // Attempt to log in with registration_number
+        if (Auth::attempt(['registration_number' => $identifier, 'password' => $password], $request->filled('remember'))) {
+            $request->session()->regenerate();
+            return $this->authenticated($request, Auth::user());
+        }
 
-            // Attempt to log in with unique_id (school passcode) - need custom logic for hashed passcode
-            $userByPasscode = User::where('email', '!=', $identifier)
-                ->where('registration_number', '!=', $identifier)
-                ->get()
-                ->first(function ($user) use ($identifier) {
-                    try {
-                        return Hash::check($identifier, $user->unique_id);
-                    } catch (\Exception $e) {
-                        // If hash check fails, try direct comparison for legacy data
-                        return $user->unique_id === $identifier;
-                    }
-                });
-                
-            if ($userByPasscode) {
-                try {
-                    if (Hash::check($password, $userByPasscode->password)) {
-                        Auth::login($userByPasscode, $request->filled('remember'));
-                        $request->session()->regenerate();
-                        return $this->authenticated($request, $userByPasscode);
-                    }
-                } catch (\Exception $e) {
-                    // If password hash check fails, try direct comparison and then hash it
-                    if ($userByPasscode->password === $password) {
-                        // Update the password to be properly hashed
-                        $userByPasscode->password = Hash::make($password);
-                        $userByPasscode->save();
-                        
-                        Auth::login($userByPasscode, $request->filled('remember'));
-                        $request->session()->regenerate();
-                        return $this->authenticated($request, $userByPasscode);
-                    }
+        // Attempt to log in with unique_id (school passcode)
+        // This requires custom logic since 'unique_id' isn't a standard credential field.
+        // We must fetch all users and check the hashed passcode for each. This is inefficient
+        // but necessary if we can't query by a hashed value directly in the database.
+        // NOTE: This could be slow with a large number of users.
+        $users = User::where('email', '!=', $identifier)
+            ->where('registration_number', '!=', $identifier)
+            ->get();
+
+        foreach ($users as $user) {
+            // Check if the provided identifier matches the user's hashed unique_id
+            if (Hash::check($identifier, $user->unique_id)) {
+                // If the unique_id matches, now check the password
+                if (Hash::check($password, $user->password)) {
+                    Auth::login($user, $request->filled('remember'));
+                    $request->session()->regenerate();
+                    return $this->authenticated($request, $user);
                 }
+                // If passcode matches but password doesn't, we can break early
+                // as the identifier is unique.
+                break;
             }
-
-        } catch (\Exception $e) {
-            // Log the specific error for debugging
-            \Log::error('Login error: ' . $e->getMessage(), [
-                'identifier' => $identifier,
-                'ip' => $request->ip(),
-                'timestamp' => now()
-            ]);
         }
 
         // Log failed login attempt

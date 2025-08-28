@@ -235,6 +235,65 @@ class ExamBan extends Model
 
         return $ban ? $ban : false;
     }
+
+    /**
+     * Reactivate a ban and record a new violation.
+     */
+    public function reactivateAndRecordViolation($violationType, $violations, $reason = null)
+    {
+        $this->load('user', 'subject');
+
+        $this->ban_count += 1;
+        $this->is_active = true;
+        $this->reactivated_at = null;
+        $this->reactivated_by = null;
+        $this->reactivation_reason = null;
+        $this->banned_at = now();
+        $this->violation_type = $violationType;
+        $this->total_violations = $violations->count();
+
+        $this->ban_reason = $reason ?? self::generateBanReason($violationType, $violations->count(), $this->ban_count);
+
+        $newViolationDetails = $violations->map(function ($violation) {
+            return [
+                'type' => $violation->violation_type,
+                'description' => $violation->description,
+                'occurred_at' => $violation->occurred_at->toISOString(),
+                'student_identification' => [
+                    'registration_number' => $this->user->registration_number ?? 'N/A',
+                    'email' => $this->user->email,
+                    'name' => $this->user->name,
+                    'user_id' => $this->user->id
+                ],
+                'tracking_method' => 'registration_and_email_based',
+                'user_agent' => $violation->user_agent,
+                'metadata' => $violation->metadata,
+                'note' => 'Student tracked by registration number and email, NOT IP address'
+            ];
+        })->toArray();
+
+        $this->violation_details = array_merge($this->violation_details ?? [], $newViolationDetails);
+
+        // Here we can reuse the offender classification logic.
+        $previousBansInSubject = $this->ban_count - 1;
+        $bansInOtherSubjects = self::where('user_id', $this->user_id)
+            ->where('subject_id', '!=', $this->subject_id)
+            ->count();
+        $totalBansAcrossAllSubjects = $previousBansInSubject + $bansInOtherSubjects;
+
+        $offenderType = 'repeat_subject_offender';
+        if ($bansInOtherSubjects > 0) {
+            $offenderType = 'cross_subject_offender';
+        }
+        if ($totalBansAcrossAllSubjects >= 3) {
+            $offenderType = 'chronic_offender';
+        }
+
+        $this->admin_notes = "RE-BANNED: Student {$this->user->name} (Reg: {$this->user->registration_number} | Email: {$this->user->email}) - {$offenderType} - Banned again after {$violations->count()} {$violationType} violation(s) for {$this->subject->name} ONLY. This is ban #{$this->ban_count} for this subject. Total bans across all subjects: " . ($totalBansAcrossAllSubjects + 1) . ".";
+
+        $this->save();
+        return $this;
+    }
     
     /**
      * Backward compatibility alias for isBannedFromSubject
