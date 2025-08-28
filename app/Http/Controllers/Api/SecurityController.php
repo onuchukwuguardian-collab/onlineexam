@@ -28,20 +28,9 @@ class SecurityController extends Controller
             'exam_session_id' => 'nullable|exists:exam_sessions,id'
         ]);
 
-        // First check if user is already banned
-        $existingBan = ExamBan::isBannedFromSubject($request->user_id, $request->subject_id);
-        if ($existingBan) {
-            return response()->json([
-                'success' => false,
-                'banned' => true,
-                'message' => 'User is already banned from this subject.',
-                'ban_details' => $existingBan
-            ]);
-        }
-
         try {
-            // Record violation
-            $violation = ExamSecurityViolation::recordViolation(
+            // Record violation first
+            ExamSecurityViolation::recordViolation(
                 $request->user_id,
                 $request->subject_id,
                 $request->violation_type,
@@ -49,7 +38,6 @@ class SecurityController extends Controller
                 $request->exam_session_id
             );
 
-            // Check if this violation should trigger a ban
             $shouldBan = false;
             $banDetails = null;
 
@@ -64,15 +52,32 @@ class SecurityController extends Controller
                     ->orderBy('occurred_at', 'desc')
                     ->get();
                 
-                // Create the ban
-                $ban = ExamBan::createSubjectBan(
-                    $request->user_id, 
-                    $request->subject_id, 
-                    ExamBan::VIOLATION_TAB_SWITCH, 
-                    $violations
-                );
+                // Use update-or-create logic to handle bans
+                // Find *any* existing ban, active or not.
+                $ban = ExamBan::where('user_id', $request->user_id)
+                              ->where('subject_id', $request->subject_id)
+                              ->first();
 
-                $banDetails = $ban;
+                if ($ban) {
+                    // If a ban record exists, reactivate it and add new violation details
+                    if (!$ban->is_active) {
+                        $banDetails = $ban->reactivateAndRecordViolation(
+                            ExamBan::VIOLATION_TAB_SWITCH,
+                            $violations
+                        );
+                    } else {
+                        // If already actively banned, just return the details
+                        $banDetails = $ban;
+                    }
+                } else {
+                    // If no ban record exists, create a new one
+                    $banDetails = ExamBan::createSubjectBan(
+                        $request->user_id,
+                        $request->subject_id,
+                        ExamBan::VIOLATION_TAB_SWITCH,
+                        $violations
+                    );
+                }
             }
 
             return response()->json([
@@ -83,10 +88,13 @@ class SecurityController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to record security violation: ' . $e->getMessage());
+            Log::error('Failed to record security violation or process ban: ' . $e->getMessage(), [
+                'request' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to record security violation.'
+                'message' => 'An error occurred while processing the security violation.'
             ], 500);
         }
     }
